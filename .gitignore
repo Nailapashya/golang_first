@@ -1,0 +1,15 @@
+# macOS
+**/.DS_Store
+
+# Jetbrains
+.idea/
+
+# Run script
+Makefile
+
+# Dev build
+build/
+tmp/
+
+# Test
+*.out

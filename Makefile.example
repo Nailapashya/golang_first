@@ -1,0 +1,77 @@
+.PHONY: clean critic security lint test swag run stop
+
+BUILD_DIR = $(PWD)/build
+
+# App Env
+SERVER_NAME="SIPDPerencanaanPenganggaranMasterDataService"
+SERVER_URL="0.0.0.0:4000"
+SERVER_READ_TIMEOUT=60
+JWT_SECRET_KEY="jwt_secret"
+SIPD_CORS_WHITELISTS="*"
+DB_SERVER_URL="host=127.0.0.1 port=5432 user=xxx password=xxx dbname=sipd_master_data"
+
+clean:
+	rm -rf ./build
+
+critic:
+	gocritic check -enableAll ./...
+
+security:
+	gosec -quiet ./...
+
+lint:
+	golangci-lint run ./...
+
+test: clean critic security lint
+	go test -v -timeout 60s -coverprofile=cover.out -cover ./...
+	go tool cover -func=cover.out
+
+swag:
+	swag fmt && swag init
+
+go:
+	export SERVER_NAME=$(SERVER_NAME);\
+    export SERVER_URL=$(SERVER_URL);\
+    export SERVER_READ_TIMEOUT=$(SERVER_READ_TIMEOUT);\
+    export JWT_SECRET_KEY=$(JWT_SECRET_KEY);\
+    export SIPD_CORS_WHITELISTS=$(SIPD_CORS_WHITELISTS);\
+    export DB_SERVER_URL=$(DB_SERVER_URL);\
+    go mod tidy;\
+    go run main.go
+
+build: test
+	go mod tidy;\
+    #go build -o $(BUILD_DIR)/$(IMAGE_NAME) -tags musl
+	CGO_ENABLED=0 go build -ldflags="-w -s" -o $(BUILD_DIR)/$(IMAGE_NAME) main.go
+
+run: swag build
+	export SERVER_NAME=$(SERVER_NAME);\
+    export SERVER_URL=$(SERVER_URL);\
+    export SERVER_READ_TIMEOUT=$(SERVER_READ_TIMEOUT);\
+    export JWT_SECRET_KEY=$(JWT_SECRET_KEY);\
+    export SIPD_CORS_WHITELISTS=$(SIPD_CORS_WHITELISTS);\
+    export DB_SERVER_URL=$(DB_SERVER_URL);\
+	$(BUILD_DIR)/$(IMAGE_NAME)
+
+docker_build_image:
+	docker build -t $(IMAGE_NAME):latest .
+
+docker_app: docker_build_image
+	docker run -d \
+	            --restart unless-stopped \
+        		--name $(IMAGE_NAME)_container \
+        		--network host \
+        		-e SERVER_NAME=$(SERVER_NAME) \
+        		-e SERVER_URL=$(SERVER_URL) \
+        		-e SERVER_READ_TIMEOUT=$(SERVER_READ_TIMEOUT) \
+        		-e JWT_SECRET_KEY=$(JWT_SECRET_KEY) \
+        		-e SIPD_CORS_WHITELISTS=$(SIPD_CORS_WHITELISTS) \
+        		-e DB_SERVER_URL=$(DB_SERVER_URL) \
+        		$(IMAGE_NAME):latest
+
+docker_run: docker_app
+
+docker_stop:
+	docker container stop $(IMAGE_NAME)_container
+	docker container rm $(IMAGE_NAME)_container
+	docker rmi $(IMAGE_NAME):latest

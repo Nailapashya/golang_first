@@ -1,0 +1,160 @@
+definitions:
+  model.UrusanModel:
+    properties:
+      id_daerah:
+        example: 371
+        type: integer
+      id_unik:
+        description: ID unik urusan
+        example: 0076b9dc-02eb-4d05-990a-44b16a9ff76a
+        type: string
+      id_urusan:
+        example: 12
+        type: integer
+      is_locked:
+        description: Urusan ini dikunci atau tidak
+        example: 0
+        type: integer
+      kode_urusan:
+        example: "2"
+        type: string
+      nama_urusan:
+        example: URUSAN PEMERINTAHAN WAJIB YANG TIDAK BERKAITAN DENGAN PELAYANAN DASAR
+        type: string
+      tahun:
+        example: 2022
+        type: integer
+    type: object
+  utils.DataValidationError:
+    properties:
+      field:
+        example: email
+        type: string
+      message:
+        example: Invalid email address
+        type: string
+    type: object
+  utils.RequestError:
+    properties:
+      code:
+        example: 422
+        type: integer
+      fields:
+        items:
+          $ref: '#/definitions/utils.DataValidationError'
+        type: array
+      message:
+        example: Invalid email address
+        type: string
+    type: object
+info:
+  contact:
+    email: lifelinejar@mail.com
+    name: API Support
+  description: SIPD Service Boilerpate Rest API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: SIPD Service Boilerpate
+  version: "1.0"
+paths:
+  /site:
+    get:
+      consumes:
+      - application/json
+      description: get site page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "422":
+          description: Data validation failed
+          schema:
+            items:
+              $ref: '#/definitions/utils.DataValidationError'
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+      summary: site page
+      tags:
+      - Site
+  /strict/urusan:
+    get:
+      description: Menampilkan list master data urusan dengan id daerah yang sama
+        dengan user yang mengaksesnya.
+      parameters:
+      - description: Tahun yang ditampilkan
+        in: query
+        name: tahun
+        required: true
+        type: integer
+      - description: Filter kode urusan (match)
+        in: query
+        name: kode_urusan
+        type: string
+      - description: Filter nama urusan (like)
+        in: query
+        name: nama_urusan
+        type: string
+      - description: Halaman yang ditampilkan
+        in: query
+        name: page
+        type: integer
+      - description: Jumlah data per halaman, maksimal 50 data
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/model.UrusanModel'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "422":
+          description: Data validation failed
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/utils.RequestError'
+      security:
+      - ApiKeyAuth: []
+      summary: Menampilkan List Master Data Urusan.
+      tags:
+      - Urusan
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
