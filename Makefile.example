@@ -3,12 +3,12 @@
 BUILD_DIR = $(PWD)/build
 
 # App Env
-SERVER_NAME="SIPDPerencanaanPenganggaranMasterDataService"
+SERVER_NAME="-"
 SERVER_URL="0.0.0.0:4000"
 SERVER_READ_TIMEOUT=60
 JWT_SECRET_KEY="jwt_secret"
 SIPD_CORS_WHITELISTS="*"
-DB_SERVER_URL="host=127.0.0.1 port=5432 user=xxx password=xxx dbname=sipd_master_data"
+DB_SERVER_URL="host=127.0.0.1 port=5432 user=xxx password=xxx dbname=xxx"
 
 clean:
 	rm -rf ./build
