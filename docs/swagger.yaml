@@ -59,6 +59,22 @@ info:
   title: SIPD Service Boilerpate
   version: "1.0"
 paths:
+  /index:
+    get:
+      consumes:
+      - application/json
+      description: Returns a user's information in JSON format
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user information
+      tags:
+      - user
   /site:
     get:
       consumes:
